@@ -31,16 +31,15 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Bot.Builder.Internals.Fibers;
+using Microsoft.Bot.Builder.Luis.Models;
+using Newtonsoft.Json;
 using System;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-
-using Newtonsoft.Json;
-using Microsoft.Bot.Builder.Internals.Fibers;
-using Microsoft.Bot.Builder.Luis.Models;
 
 namespace Microsoft.Bot.Builder.Luis
 {
@@ -68,7 +67,7 @@ namespace Microsoft.Bot.Builder.Luis
     /// <summary>
     /// Standard implementation of ILuisService against actual LUIS service.
     /// </summary>
-    [Serializable]
+    //TODO: ??? [Serializable]
     public sealed class LuisService : ILuisService
     {
         private readonly ILuisModel model;
@@ -89,9 +88,9 @@ namespace Microsoft.Bot.Builder.Luis
 
         Uri ILuisService.BuildUri(string text)
         {
-            var id = HttpUtility.UrlEncode(this.model.ModelID);
-            var sk = HttpUtility.UrlEncode(this.model.SubscriptionKey);
-            var q = HttpUtility.UrlEncode(text);
+            var id = WebUtility.UrlEncode(this.model.ModelID);
+            var sk = WebUtility.UrlEncode(this.model.SubscriptionKey);
+            var q = WebUtility.UrlEncode(text);
 
             var builder = new UriBuilder(UriBase);
             builder.Query = $"id={id}&subscription-key={sk}&q={q}";

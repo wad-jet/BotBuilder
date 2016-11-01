@@ -1,31 +1,51 @@
-﻿using Microsoft.Rest;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Bot.Connector
 {
     public class MicrosoftAppCredentials : ServiceClientCredentials
     {
+        private readonly IConfigurationRoot _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMemoryCache _memoryCache;
+
         protected static ConcurrentDictionary<string, DateTime> TrustedHostNames = new ConcurrentDictionary<string, DateTime>(
                                                                                         new Dictionary<string, DateTime>() {
                                                                                             { "state.botframework.com", DateTime.MaxValue }
                                                                                         });
 
-        public MicrosoftAppCredentials(string appId = null, string password = null)
+        public MicrosoftAppCredentials(IConfigurationRoot configuration, IHttpContextAccessor httpContextAccessor, IMemoryCache memoryCache, string appId = null, string password = null)
         {
-            MicrosoftAppId = appId ?? ConfigurationManager.AppSettings["MicrosoftAppId"];
-            MicrosoftAppPassword = password ?? ConfigurationManager.AppSettings["MicrosoftAppPassword"];
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+            if (httpContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextAccessor));
+            }
+            if (memoryCache == null)
+            {
+                throw new ArgumentNullException(nameof(memoryCache));
+            }
+            _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+            _memoryCache = memoryCache;
+
+            MicrosoftAppId = appId ?? _configuration[$"{MicrosoftAppIdSettingName}:MicrosoftAppId"];
+            MicrosoftAppPassword = password ?? _configuration[$"{MicrosoftAppIdSettingName}:MicrosoftAppPassword"];
             TokenCacheKey = $"{MicrosoftAppId}-cache";
         }
 
@@ -61,7 +81,7 @@ namespace Microsoft.Bot.Connector
             }
             catch (UriFormatException)
             {
-                Trace.TraceWarning($"Service url {serviceUrl} is not a well formed Uri!");
+                //LOG: Trace.TraceWarning($"Service url {serviceUrl} is not a well formed Uri!");
             }
         }
 
@@ -96,7 +116,7 @@ namespace Microsoft.Bot.Connector
         public async Task<string> GetTokenAsync(bool forceRefresh = false)
         {
             string token;
-            var oAuthToken = (OAuthResponse)System.Web.HttpRuntime.Cache.Get(TokenCacheKey);
+            var oAuthToken = _memoryCache?.Get(TokenCacheKey) as OAuthResponse;
             if (oAuthToken != null && !forceRefresh && TokenNotExpired(oAuthToken))
             {
                 token = oAuthToken.access_token;
@@ -104,11 +124,14 @@ namespace Microsoft.Bot.Connector
             else
             {
                 oAuthToken = await RefreshTokenAsync().ConfigureAwait(false);
-                System.Web.HttpRuntime.Cache.Insert(TokenCacheKey,
-                                                    oAuthToken,
-                                                    null,
-                                                    DateTime.UtcNow.AddSeconds(oAuthToken.expires_in),
-                                                    System.Web.Caching.Cache.NoSlidingExpiration);
+                _memoryCache.Set(TokenCacheKey, oAuthToken, DateTimeOffset.UtcNow.AddSeconds(oAuthToken.expires_in));
+
+                //System.Web.HttpRuntime.Cache.Insert(TokenCacheKey,
+                //                                    oAuthToken,
+                //                                    null,
+                //                                    DateTime.UtcNow.AddSeconds(oAuthToken.expires_in),
+                //                                    System.Web.Caching.Cache.NoSlidingExpiration);
+
                 token = oAuthToken.access_token;
             }
             return token;
@@ -118,15 +141,15 @@ namespace Microsoft.Bot.Connector
         {
             // There is no current http context, proactive message
             // assuming that developer is not calling drop context
-            if (HttpContext.Current == null || TrustedUri(request.RequestUri))
+            if (_httpContextAccessor.HttpContext == null || TrustedUri(request.RequestUri))
             {
                 return true;
             }
-            else if (HttpContext.Current.User != null)
+            else if (_httpContextAccessor.HttpContext.User != null)
             {
                 // This check is redundant now because RequestUri should already be in the 
                 // trusted uri list added by BotAuthentication attribute
-                ClaimsIdentity identity = (ClaimsIdentity)HttpContext.Current.User.Identity;
+                ClaimsIdentity identity = (ClaimsIdentity)_httpContextAccessor.HttpContext.User.Identity;
 
                 if (identity?.Claims.FirstOrDefault(c => c.Type == "appid" && JwtConfig.GetToBotFromChannelTokenValidationParameters(MicrosoftAppId).ValidIssuers.Contains(c.Issuer)) != null)
                     return true;
@@ -140,7 +163,7 @@ namespace Microsoft.Bot.Connector
                     return true;
             }
 
-            Trace.TraceWarning($"Service url {request.RequestUri.Authority} is not trusted and JwtToken cannot be sent to it.");
+            //LOG: Trace.TraceWarning($"Service url {request.RequestUri.Authority} is not trusted and JwtToken cannot be sent to it.");
             return false;
         }
 
@@ -160,8 +183,11 @@ namespace Microsoft.Bot.Connector
 
         private async Task<OAuthResponse> RefreshTokenAsync()
         {
-            MicrosoftAppId = MicrosoftAppId ?? ConfigurationManager.AppSettings[MicrosoftAppIdSettingName ?? "MicrosoftAppId"];
-            MicrosoftAppPassword = MicrosoftAppPassword ?? ConfigurationManager.AppSettings[MicrosoftAppPasswordSettingName ?? "MicrosoftAppPassword"];
+            string microsoftAppIdSettingName = MicrosoftAppIdSettingName ?? "MicrosoftAppId";
+            MicrosoftAppId = MicrosoftAppId ?? _configuration[$"{MicrosoftAppIdSettingName}:{microsoftAppIdSettingName}"];
+
+            string microsoftAppPasswordSettingName = MicrosoftAppPasswordSettingName ?? "MicrosoftAppPassword";
+            MicrosoftAppPassword = MicrosoftAppPassword ?? _configuration[$"{MicrosoftAppIdSettingName}:{microsoftAppPasswordSettingName}"];
 
             OAuthResponse oauthResponse;
 

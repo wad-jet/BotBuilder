@@ -1,0 +1,30 @@
+{
+    "dependencies": {
+        "Microsoft.Bot.Connector": "1.0.0-*",
+        "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
+        "Microsoft.Extensions.Logging.Abstractions": "1.0.0",
+        "NETStandard.Library": "1.6.0",
+        "Newtonsoft.Json": "9.0.1",
+        "System.Reflection": "4.1.0"
+    },
+    "frameworks": {
+        "netstandard1.6": {
+            "imports": "dnxcore50"
+        }
+    },
+    "version": "1.0.0-*",
+    "exclude": [
+        "Microsoft.Bot.Builder.Calling/**/*.cs",
+        "Microsoft.Bot.Builder.History/**/*.cs",
+        "Microsoft.Bot.Connector/**/*.cs",
+        "Microsoft.Bot.Builder.Azure/**/*.cs",
+        "Microsoft.Bot.Builder.Azure/Properties/AssemblyInfo.cs",
+        "Microsoft.Bot.Builder.FormFlow.Json/**/*.cs",
+        "Microsoft.Bot.Builder.Azure/**/*.cs",
+        "Microsoft.Bot.Builder.History/Properties/AssemblyInfo.cs",
+        "Dialogs/**/*.cs",
+        "FormFlow/**/*.cs",
+        "Scorables/**/*.cs",
+        "Luis/**/*.cs"
+    ]
+}

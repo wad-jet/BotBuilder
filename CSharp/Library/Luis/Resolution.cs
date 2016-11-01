@@ -34,11 +34,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace Microsoft.Bot.Builder.Luis
 {
@@ -96,7 +94,7 @@ namespace Microsoft.Bot.Builder.Luis
             }
 
 
-            [Serializable]
+            //TODO: ??? [Serializable]
             public sealed class DateTimeResolution : Resolution, IEquatable<DateTimeResolution>
             {
                 public Reference? Reference { get; }

@@ -6,19 +6,41 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Bot.Connector
 {
-    using System;
-    using System.Linq;
-    using System.Collections.Generic;
+    using AspNetCore.Http;
+    using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Configuration;
     using Newtonsoft.Json;
-    using Microsoft.Rest;
-    using Microsoft.Rest.Serialization;
     using Newtonsoft.Json.Linq;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Net.Http;
-    using System.Configuration;
-    using System.Text;
 
     public partial class Activity : IActivity, IContactRelationUpdateActivity, IMessageActivity, ITypingActivity, IConversationUpdateActivity, IActionActivity
     {
+        private readonly IConfigurationRoot _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMemoryCache _memoryCache;
+
+        public Activity(IConfigurationRoot configuration, IHttpContextAccessor httpContextAccessor, IMemoryCache memoryCache)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+            if (httpContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextAccessor));
+            }
+            if (memoryCache == null)
+            {
+                throw new ArgumentNullException(nameof(memoryCache));
+            }
+            _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+            _memoryCache = memoryCache;
+        }
+
         [JsonExtensionData(ReadData = true, WriteData = true)]
         public JObject Properties { get; set; }
 
@@ -67,12 +89,12 @@ namespace Microsoft.Bot.Connector
         {
             bool useServiceUrl = (this.ChannelId == "emulator" || (this.ChannelId.StartsWith("skype") && this.ChannelId.Length > "skype".Length));
             if (useServiceUrl)
-                return new StateClient(new Uri(this.ServiceUrl), microsoftAppId, microsoftAppPassword, handlers);
+                return new StateClient(_configuration, _httpContextAccessor, _memoryCache, new Uri(this.ServiceUrl), microsoftAppId, microsoftAppPassword, handlers);
 
             if (serviceUrl != null)
-                return new StateClient(new Uri(serviceUrl), microsoftAppId, microsoftAppPassword, handlers);
+                return new StateClient(_configuration, _httpContextAccessor, _memoryCache, new Uri(serviceUrl), microsoftAppId, microsoftAppPassword, handlers);
 
-            return new StateClient(new MicrosoftAppCredentials(microsoftAppId, microsoftAppPassword), true, handlers);
+            return new StateClient(new MicrosoftAppCredentials(_configuration, _httpContextAccessor, _memoryCache, microsoftAppId, microsoftAppPassword), true, handlers);
         }
 
         /// <summary>

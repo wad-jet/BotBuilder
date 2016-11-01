@@ -1,7 +1,6 @@
 ﻿using Microsoft.Bot.Builder.Internals.Fibers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -117,7 +116,7 @@ namespace Microsoft.Bot.Builder.Calling
             {
                 if (Request.Content == null)
                 {
-                    Trace.TraceError("No content in the request");
+                    //LOG: Trace.TraceError("No content in the request");
                     return GenerateParsedResults(HttpStatusCode.BadRequest);
                 }
 
@@ -126,7 +125,7 @@ namespace Microsoft.Bot.Builder.Calling
             }
             catch (Exception e)
             {
-                Trace.TraceError($"Failed to process the incoming call, exception: {e}");
+                //LOG: Trace.TraceError($"Failed to process the incoming call, exception: {e}");
                 return GenerateParsedResults(HttpStatusCode.InternalServerError);
             }
         }
@@ -137,9 +136,10 @@ namespace Microsoft.Bot.Builder.Calling
             {
                 if (Request.Content == null)
                 {
-                    Trace.TraceError("No content in the request");
+                    //LOG: Trace.TraceError("No content in the request");
                     return GenerateParsedResults(HttpStatusCode.BadRequest);
                 }
+
                 if (Request.Content.IsMimeMultipartContent())
                 {
                     return await HandleMultipartRequest(Request).ConfigureAwait(false);
@@ -150,7 +150,7 @@ namespace Microsoft.Bot.Builder.Calling
             }
             catch (Exception e)
             {
-                Trace.TraceError($"Failed to process the callback request, exception: {e}");
+                //LOG: Trace.TraceError($"Failed to process the callback request, exception: {e}");
                 return GenerateParsedResults(HttpStatusCode.InternalServerError);
             }
         }
@@ -172,7 +172,7 @@ namespace Microsoft.Bot.Builder.Calling
                 streamProvider.Contents.FirstOrDefault(content => content.Headers.ContentType?.MediaType == "application/json");
             if (jsonContent == null)
             {
-                Trace.TraceError("No json content in MultiPart content");
+                //LOG: Trace.TraceError("No json content in MultiPart content");
                 return GenerateParsedResults(HttpStatusCode.BadRequest);
             }
             var json = await jsonContent.ReadAsStringAsync().ConfigureAwait(false);
@@ -181,7 +181,7 @@ namespace Microsoft.Bot.Builder.Calling
                 streamProvider.Contents.FirstOrDefault(content => content.Headers.ContentType?.MediaType != "application/json");
             if (otherContent == null)
             {
-                Trace.TraceError("MultiPart content does not contain non json content");
+                //LOG: Trace.TraceError("MultiPart content does not contain non json content");
                 return GenerateParsedResults(HttpStatusCode.BadRequest);
             }
 

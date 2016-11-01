@@ -105,6 +105,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Bot.Builder.Histo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Bot.Builder.Azure.Tests", "tests\Microsoft.Bot.Builder.Azure.Tests\Microsoft.Bot.Builder.Azure.Tests.csproj", "{C0FC2275-93A1-462C-ACC6-7329AAFDDAB4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AspNetCore", "AspNetCore", "{5A87170B-9F47-4B95-BDE8-F3F6168A44DC}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.BotCore.Builder", "Library\Microsoft.BotCore.Builder.xproj", "{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.BotCore.Connector", "Library\Microsoft.Bot.Connector\Microsoft.BotCore.Connector.xproj", "{C26B1641-D361-40D5-B665-44E35B2088BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -248,6 +254,18 @@ Global
 		{C0FC2275-93A1-462C-ACC6-7329AAFDDAB4}.Documentation|Any CPU.Build.0 = Debug|Any CPU
 		{C0FC2275-93A1-462C-ACC6-7329AAFDDAB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0FC2275-93A1-462C-ACC6-7329AAFDDAB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}.Documentation|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}.Documentation|Any CPU.Build.0 = Debug|Any CPU
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C26B1641-D361-40D5-B665-44E35B2088BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C26B1641-D361-40D5-B665-44E35B2088BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C26B1641-D361-40D5-B665-44E35B2088BB}.Documentation|Any CPU.ActiveCfg = Debug|Any CPU
+		{C26B1641-D361-40D5-B665-44E35B2088BB}.Documentation|Any CPU.Build.0 = Debug|Any CPU
+		{C26B1641-D361-40D5-B665-44E35B2088BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C26B1641-D361-40D5-B665-44E35B2088BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -276,5 +294,7 @@ Global
 		{77299F9C-8F49-4839-B7EA-55BA726321D5} = {28BCEB2C-F4BE-416D-A4FD-A311E99A9EB5}
 		{D2834D71-D7A2-451B-9A61-1488AF049526} = {28BCEB2C-F4BE-416D-A4FD-A311E99A9EB5}
 		{C0FC2275-93A1-462C-ACC6-7329AAFDDAB4} = {8E05398E-3CBE-4DCD-9382-072DC8859427}
+		{2ABC9F18-76AE-4FDD-8CE5-A2CFDCFD4A28} = {5A87170B-9F47-4B95-BDE8-F3F6168A44DC}
+		{C26B1641-D361-40D5-B665-44E35B2088BB} = {5A87170B-9F47-4B95-BDE8-F3F6168A44DC}
 	EndGlobalSection
 EndGlobal

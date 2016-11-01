@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Mime;
 using System.Text.RegularExpressions;
 using Microsoft.Bot.Builder.Calling.ObjectModel.Misc;
 using Newtonsoft.Json;
@@ -28,7 +27,7 @@ namespace Microsoft.Bot.Builder.Calling.ObjectModel.Contracts
         /// </summary>
         private static Regex MriWeakRegex = new Regex("^\\d{1,8}\\:.{1,512}$", RegexOptions.Compiled);
 
-        public static readonly ContentType JsonContentType = new ContentType("application/json");
+        public static readonly string JsonContentType = "application/json";
         public const string ToHeaderKey = "to";
         public const string FromHeaderKey = "from";
         public const string MessageTypeHeaderKey = "type";

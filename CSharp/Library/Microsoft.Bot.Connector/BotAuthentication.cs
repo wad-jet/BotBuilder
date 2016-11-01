@@ -1,42 +1,62 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Http.Controllers;
-using System.Web.Http.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.Bot.Connector
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
     public class BotAuthentication : ActionFilterAttribute
     {
+        private readonly IConfigurationRoot _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public string MicrosoftAppId { get; set; }
         public string MicrosoftAppIdSettingName { get; set; }
         public bool DisableSelfIssuedTokens { get; set; }
         public virtual string OpenIdConfigurationUrl { get; set; } = JwtConfig.ToBotFromChannelOpenIdMetadataUrl;
 
-        public override async Task OnActionExecutingAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
+        public BotAuthentication(IConfigurationRoot configuration, IHttpContextAccessor httpContextAccessor)
         {
-            MicrosoftAppId = MicrosoftAppId ?? ConfigurationManager.AppSettings[MicrosoftAppIdSettingName ?? "MicrosoftAppId"];
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+            if (httpContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextAccessor));
+            }
+            _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
+        }
+
+        public override async Task OnActionExecutionAsync(ActionExecutingContext actionContext, ActionExecutionDelegate next)
+        {         
+            MicrosoftAppId = MicrosoftAppId ?? _configuration[$"{MicrosoftAppIdSettingName}:MicrosoftAppId"];
 
             if (Debugger.IsAttached && String.IsNullOrEmpty(MicrosoftAppId))
                 // then auth is disabled
                 return;
 
             var tokenExtractor = new JwtTokenExtractor(JwtConfig.GetToBotFromChannelTokenValidationParameters(MicrosoftAppId), OpenIdConfigurationUrl);
-            var identity = await tokenExtractor.GetIdentityAsync(actionContext.Request);
+
+            //TODO: Надо проверить!
+            var identity = await tokenExtractor.GetIdentityAsync(actionContext.HttpContext.Request.Headers["WWW-Authenticate"]);
 
             // No identity? If we're allowed to, fall back to MSA
             // This code path is used by the emulator
             if (identity == null && !DisableSelfIssuedTokens)
             {
                 tokenExtractor = new JwtTokenExtractor(JwtConfig.ToBotFromMSATokenValidationParameters, JwtConfig.ToBotFromMSAOpenIdMetadataUrl);
-                identity = await tokenExtractor.GetIdentityAsync(actionContext.Request);
+
+                //TODO: Надо проверить!
+                identity = await tokenExtractor.GetIdentityAsync(actionContext.HttpContext.Request.Headers["WWW-Authenticate"]);
 
                 // Check to make sure the app ID in the token is ours
                 if (identity != null)
@@ -76,17 +96,19 @@ namespace Microsoft.Bot.Connector
                 }
                 else
                 {
-                    Trace.TraceWarning("No activity in the Bot Authentication Action Arguments");
+                    //LOG: Trace.TraceWarning("No activity in the Bot Authentication Action Arguments");
                 }
             }
 
-            Thread.CurrentPrincipal = new ClaimsPrincipal(identity);
+            //Thread.CurrentPrincipal = new ClaimsPrincipal(identity);
 
             // Inside of ASP.NET this is required
-            if (HttpContext.Current != null)
-                HttpContext.Current.User = Thread.CurrentPrincipal;
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                _httpContextAccessor.HttpContext.User = new ClaimsPrincipal(identity);
+            }
 
-            await base.OnActionExecutingAsync(actionContext, cancellationToken);
+            base.OnActionExecuting(actionContext);
         }
     }
 }

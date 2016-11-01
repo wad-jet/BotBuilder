@@ -136,8 +136,8 @@ namespace Microsoft.Bot.Builder.Calling
 
         private Task<Workflow> PassActionResultToHandler(ConversationResult receivedConversationResult, Task<Stream> additionalData)
         {
-            Trace.TraceInformation(
-                $"CallingBotService: Received the outcome for {receivedConversationResult.OperationOutcome.Type} operation, callId: {receivedConversationResult.OperationOutcome.Id}");
+            //LOG: Trace.TraceInformation(
+            //    $"CallingBotService: Received the outcome for {receivedConversationResult.OperationOutcome.Type} operation, callId: {receivedConversationResult.OperationOutcome.Id}");
 
             switch (receivedConversationResult.OperationOutcome.Type)
             {
@@ -161,14 +161,14 @@ namespace Microsoft.Bot.Builder.Calling
 
         private async Task<Workflow> HandleIncomingCall(Conversation conversation)
         {
-            Trace.TraceInformation($"CallingBotService: Received incoming call, callId: {conversation.Id}");
+            //LOG: Trace.TraceInformation($"CallingBotService: Received incoming call, callId: {conversation.Id}");
             var incomingCall = new IncomingCallEvent(conversation, CreateInitialWorkflow());
             var eventHandler = OnIncomingCallReceived;
             if (eventHandler != null)
                 await eventHandler.Invoke(incomingCall).ConfigureAwait(false);
             else
             {
-                Trace.TraceInformation($"CallingBotService: No handler specified for incoming call");
+                //LOG: Trace.TraceInformation($"CallingBotService: No handler specified for incoming call");
                 return null;
             }
 

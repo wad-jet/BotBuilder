@@ -1,6 +1,5 @@
-﻿using System;
-using System.IdentityModel.Tokens;
-using System.Linq;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 
 namespace Microsoft.Bot.Connector
 {

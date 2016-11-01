@@ -31,6 +31,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder.Internals.Fibers;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -38,13 +39,11 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Microsoft.Bot.Builder.Dialogs.Internals
 {
@@ -64,6 +63,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
 
     public class InMemoryDataStore : IBotDataStore<BotData>
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         internal readonly ConcurrentDictionary<string, string> store = new ConcurrentDictionary<string, string>();
         private readonly Dictionary<BotStoreType, object> locks = new Dictionary<BotStoreType, object>()
         {
@@ -71,6 +72,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
             { BotStoreType.BotPrivateConversationData, new object() },
             { BotStoreType.BotUserData, new object() }
         };
+
+        public InMemoryDataStore(IHttpContextAccessor httpContextAccessor)
+        {
+            if (httpContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextAccessor));
+            }
+            _httpContextAccessor = httpContextAccessor;
+        }
 
         async Task<BotData> IBotDataStore<BotData>.LoadAsync(IAddress key, BotStoreType botStoreType, CancellationToken cancellationToken)
         {
@@ -88,7 +98,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
                 {
                     if (botData.ETag != "*" && Deserialize(value).ETag != botData.ETag)
                     {
-                        throw new HttpException((int)HttpStatusCode.PreconditionFailed, "Inconsistent SaveAsync based on ETag!");
+                        _httpContextAccessor.HttpContext.Response.StatusCode = (int)HttpStatusCode.PreconditionFailed;
+                        _httpContextAccessor.HttpContext.Response.WriteAsync("Inconsistent SaveAsync based on ETag!", cancellationToken).Wait(cancellationToken);
+                        throw new InvalidOperationException();
+                        // throw new HttpException((int)HttpStatusCode.PreconditionFailed, "Inconsistent SaveAsync based on ETag!");
                     }
                     botData.ETag = DateTime.UtcNow.Ticks.ToString();
                     return Serialize(botData);
@@ -125,8 +138,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
             {
                 var serializedJSon = JsonConvert.SerializeObject(data);
                 streamWriter.Write(serializedJSon);
-                streamWriter.Close();
-                stream.Close();
+                //streamWriter.Close();
+                //stream.Close();
                 return Convert.ToBase64String(cmpStream.ToArray());
             }
         }
@@ -622,10 +635,16 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
             this.bag.SetValue(this.key, blob);
         }
 
-        public override void Close()
+        protected override void Dispose(bool disposing)
         {
-            this.Flush();
-            base.Close();
+            base.Flush();
+            base.Dispose(disposing);
         }
+
+        //public override void Close()
+        //{
+        //    this.Flush();
+        //    base.Close();
+        //}
     }
 }

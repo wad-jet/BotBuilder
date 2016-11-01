@@ -60,7 +60,7 @@ namespace Microsoft.Bot.Builder.Luis
     /// The LUIS model information.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = true)]
-    [Serializable]
+    //TODO: ??? [Serializable]
     public class LuisModelAttribute : Attribute, ILuisModel, IEquatable<ILuisModel>
     {
         private readonly string modelID;

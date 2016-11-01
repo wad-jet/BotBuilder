@@ -33,8 +33,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -96,7 +94,13 @@ namespace Microsoft.Bot.Builder.Internals.Fibers
             KeyedGate gate;
             lock (this.gateByItem)
             {
-                gate = this.gateByItem.GetOrAdd(item, _ => new KeyedGate());
+                if (!this.gateByItem.TryGetValue(item, out gate))
+                {
+                    gate = new KeyedGate();
+                    this.gateByItem.Add(item, gate);
+                }
+
+                // gate = this.gateByItem.GetOrAdd(item, _ => new KeyedGate());
                 ++gate.ReferenceCount;
             }
 

@@ -81,7 +81,7 @@ namespace Microsoft.Bot.Builder.FormFlow.Advanced
     /// <summary>
     /// The prompt that is returned by form prompter. 
     /// </summary>
-    [Serializable]
+    //TODO: ??? [Serializable]
     public sealed class FormPrompt : ICloneable
     {
         /// <summary>
@@ -128,7 +128,7 @@ namespace Microsoft.Bot.Builder.FormFlow.Advanced
     /// <summary>
     /// A Form button that will be mapped to Connector.Action.
     /// </summary>
-    [Serializable]
+    //TODO: ??? [Serializable]
     public sealed class FormButton : ICloneable
     {
         /// <summary>

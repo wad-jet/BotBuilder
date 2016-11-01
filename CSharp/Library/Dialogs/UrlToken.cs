@@ -31,16 +31,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
@@ -70,7 +65,8 @@ namespace Microsoft.Bot.Builder.Dialogs
                     var serializer = JsonSerializer.CreateDefault();
                     serializer.Serialize(writer, item);
                 }
-                var token = HttpServerUtility.UrlTokenEncode(memory.ToArray());
+
+                var token = WebEncoders.Base64UrlEncode(memory.ToArray());
                 return token;
             }
         }
@@ -83,7 +79,7 @@ namespace Microsoft.Bot.Builder.Dialogs
         /// <returns>The item instance.</returns>
         public static T Decode<T>(string token)
         {
-            var buffer = HttpServerUtility.UrlTokenDecode(token);
+            var buffer = WebEncoders.Base64UrlDecode(token);
             using (var memory = new MemoryStream(buffer))
             using (var gzip = new GZipStream(memory, CompressionMode.Decompress))
             using (var reader = new BsonReader(gzip))

@@ -44,6 +44,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Bot.Builder.Internals.Fibers;
 using Microsoft.Bot.Connector;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Builder.Dialogs.Internals
 {
@@ -68,7 +69,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
             Delegate Method { get; }
         }
 
-        [Serializable]
+        //TODO: ??? [Serializable]
         private sealed class ThunkStart : IThunk
         {
             private readonly StartAsync start;
@@ -98,7 +99,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
             }
         }
 
-        [Serializable]
+        //TODO: ??? [Serializable]
         private sealed class ThunkResume<T> : IThunk
         {
             private readonly ResumeAfter<T> resume;
@@ -338,15 +339,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
 
         public LocalizedScope(string locale)
         {
-            this.previousCulture = Thread.CurrentThread.CurrentCulture;
-            this.previousUICulture = Thread.CurrentThread.CurrentUICulture;
+            this.previousCulture = CultureInfo.CurrentCulture;
+            this.previousUICulture = CultureInfo.CurrentUICulture;
 
             if (!string.IsNullOrWhiteSpace(locale))
             {
                 CultureInfo found = null;
                 try
                 {
-                    found = CultureInfo.GetCultureInfo(locale);
+                    found = new CultureInfo(locale); //TODO: Проверить, было: CultureInfo.GetCultureInfo(locale);
                 }
                 catch (CultureNotFoundException)
                 {
@@ -354,16 +355,16 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
 
                 if (found != null)
                 {
-                    Thread.CurrentThread.CurrentCulture = found;
-                    Thread.CurrentThread.CurrentUICulture = found;
+                    CultureInfo.CurrentCulture = found;
+                    CultureInfo.CurrentUICulture = found;
                 }
             }
         }
 
         public void Dispose()
         {
-            Thread.CurrentThread.CurrentCulture = previousCulture;
-            Thread.CurrentThread.CurrentUICulture = previousUICulture;
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUICulture;
         }
     }
 
@@ -438,9 +439,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
         private readonly IPostToBot inner;
         private readonly IBotToUser botToUser;
         private readonly ResourceManager resources;
-        private readonly TraceListener trace;
+        private readonly ILogger trace;
 
-        public PostUnhandledExceptionToUserTask(IPostToBot inner, IBotToUser botToUser, ResourceManager resources, TraceListener trace)
+        public PostUnhandledExceptionToUserTask(IPostToBot inner, IBotToUser botToUser, ResourceManager resources, ILogger trace)
         {
             SetField.NotNull(out this.inner, nameof(inner), inner);
             SetField.NotNull(out this.botToUser, nameof(botToUser), botToUser);
@@ -469,7 +470,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Internals
                 }
                 catch (Exception inner)
                 {
-                    this.trace.WriteLine(inner);
+                    this.trace.LogTrace(inner.Message);
                 }
 
                 throw;

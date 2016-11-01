@@ -1,22 +1,33 @@
 ﻿using Microsoft.Bot.Builder.Calling.Exceptions;
+using Microsoft.Extensions.Configuration;
 using System;
-using System.Configuration;
 
 namespace Microsoft.Bot.Builder.Calling
 {
     public class CallingBotServiceSettings
     {
+        private readonly IConfigurationRoot _configuration;
+
         /// <summary>
         /// The url where the Callingcallbacks from Skype Bot platform will be sent. Needs to match the domain name of service and the route configured in BotController.
         /// For example "https://testservice.azurewebsites.net/api/calling/callback"   
         /// </summary>
         public string CallbackUrl { get; set; }
 
+        //public CallingBotServiceSettings(IConfigurationRoot configuration)
+        //{
+        //    if (configuration == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(configuration));
+        //    }
+        //    _configuration = configuration;
+        //}
+
         /// <summary>
         /// Loads core bot library configuration from the cloud service configuration
         /// </summary>
         /// <returns>MessagingBotServiceSettings</returns>
-        public static CallingBotServiceSettings LoadFromCloudConfiguration()
+        public static CallingBotServiceSettings LoadFromCloudConfiguration(IConfigurationRoot configuration)
         {
             CallingBotServiceSettings settings;
 
@@ -24,7 +35,8 @@ namespace Microsoft.Bot.Builder.Calling
             {
                 settings = new CallingBotServiceSettings
                 {
-                    CallbackUrl = ConfigurationManager.AppSettings.Get("Microsoft.Bot.Builder.Calling.CallbackUrl")
+                    //TODO: точно ли App:Settings:... ??
+                    CallbackUrl = configuration["App:Settings:Microsoft.Bot.Builder.Calling.CallbackUrl"]
                 };
             }
             catch (Exception e)

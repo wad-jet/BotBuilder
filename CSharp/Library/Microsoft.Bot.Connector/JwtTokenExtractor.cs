@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IdentityModel.Tokens;
+//using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Web.Http.Controllers;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.Bot.Connector
 {
@@ -35,8 +37,11 @@ namespace Microsoft.Bot.Connector
             // Make our own copy so we can edit it
             _tokenValidationParameters = tokenValidationParameters.Clone();
 
-            if (!_openIdMetadataCache.ContainsKey(metadataUrl))
-                _openIdMetadataCache[metadataUrl] = new ConfigurationManager<OpenIdConnectConfiguration>(metadataUrl);
+            //TODO: Проверить, может не работать
+            var configRetriever = new OpenIdConnectConfigurationRetriever();
+
+            if (!_openIdMetadataCache.ContainsKey(metadataUrl)) 
+                _openIdMetadataCache[metadataUrl] = new ConfigurationManager<OpenIdConnectConfiguration>(metadataUrl, configRetriever);
 
             _openIdMetadata = _openIdMetadataCache[metadataUrl];
 
@@ -79,16 +84,21 @@ namespace Microsoft.Bot.Connector
             }
             catch (Exception e)
             {
-                Trace.TraceWarning("Invalid token. " + e.ToString());
+                //LOG: Trace.TraceWarning("Invalid token. " + e.ToString());
                 return null;
             }
         }
 
-        public void GenerateUnauthorizedResponse(HttpActionContext actionContext)
+        public void GenerateUnauthorizedResponse(ActionExecutingContext actionContext)
         {
-            string host = actionContext.Request.RequestUri.DnsSafeHost;
-            actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
-            actionContext.Response.Headers.Add("WWW-Authenticate", string.Format("Bearer realm=\"{0}\"", host));
+            //TODO: Возможны баги - проверь! ...
+            string host = new Uri(actionContext.HttpContext.Request.Host.ToUriComponent()).DnsSafeHost;
+            actionContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            actionContext.HttpContext.Response.Headers.Add("WWW-Authenticate", string.Format("Bearer realm=\"{0}\"", host));
+
+            //string host = actionContext.Request.RequestUri.DnsSafeHost;
+            //actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
+            //actionContext.Response.Headers.Add("WWW-Authenticate", string.Format("Bearer realm=\"{0}\"", host));
             return;
         }
 
@@ -131,7 +141,7 @@ namespace Microsoft.Bot.Connector
             }
             catch (Exception e)
             {
-                Trace.TraceError($"Error refreshing OpenId configuration: {e}");
+                //LOG: Trace.TraceError($"Error refreshing OpenId configuration: {e}");
 
                 // No config? We can't continue
                 if (config == null)
@@ -139,7 +149,7 @@ namespace Microsoft.Bot.Connector
             }
 
             // Update the signing tokens from the last refresh
-            _tokenValidationParameters.IssuerSigningTokens = config.SigningTokens;
+            _tokenValidationParameters.IssuerSigningKeys = config.SigningKeys;
 
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 
@@ -151,8 +161,8 @@ namespace Microsoft.Bot.Connector
             }
             catch (SecurityTokenSignatureKeyNotFoundException)
             {
-                string keys = string.Join(", ", ((config?.SigningTokens) ?? Enumerable.Empty<SecurityToken>()).Select(t => t.Id));
-                Trace.TraceError("Error finding key for token. Available keys: " + keys);
+                string keys = string.Join(", ", ((config?.SigningKeys) ?? Enumerable.Empty<SecurityKey>()).Select(t => t.KeyId));
+                //LOG: Trace.TraceError("Error finding key for token. Available keys: " + keys);
                 throw;
             }
         }
