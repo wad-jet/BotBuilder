@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.BotCore.Connector;
 
 namespace Microsoft.Bot.Connector
 {
@@ -50,9 +51,9 @@ namespace Microsoft.Bot.Connector
         }
 
         public string MicrosoftAppId { get; set; }
-        public string MicrosoftAppIdSettingName { get; set; }
+        public string MicrosoftAppIdSettingName { get; set; } = Constants.MicrosoftAppIdSettingName;
         public string MicrosoftAppPassword { get; set; }
-        public string MicrosoftAppPasswordSettingName { get; set; }
+        public string MicrosoftAppPasswordSettingName { get; set; } = Constants.MicrosoftAppPasswordSettingName;
 
         public virtual string OAuthEndpoint { get { return "https://login.microsoftonline.com/common/oauth2/v2.0/token"; } }
         public virtual string OAuthScope { get { return "https://graph.microsoft.com/.default"; } }
@@ -183,11 +184,8 @@ namespace Microsoft.Bot.Connector
 
         private async Task<OAuthResponse> RefreshTokenAsync()
         {
-            string microsoftAppIdSettingName = MicrosoftAppIdSettingName ?? "MicrosoftAppId";
-            MicrosoftAppId = MicrosoftAppId ?? _configuration[$"{MicrosoftAppIdSettingName}:{microsoftAppIdSettingName}"];
-
-            string microsoftAppPasswordSettingName = MicrosoftAppPasswordSettingName ?? "MicrosoftAppPassword";
-            MicrosoftAppPassword = MicrosoftAppPassword ?? _configuration[$"{MicrosoftAppIdSettingName}:{microsoftAppPasswordSettingName}"];
+            MicrosoftAppId = MicrosoftAppId ?? _configuration[MicrosoftAppIdSettingName];
+            MicrosoftAppPassword = MicrosoftAppPassword ?? _configuration[MicrosoftAppPasswordSettingName];
 
             OAuthResponse oauthResponse;
 

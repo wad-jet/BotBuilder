@@ -2,6 +2,7 @@
     "dependencies": {
         "Microsoft.AspNetCore.Hosting": "1.0.0",
         "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
         "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
         "Microsoft.IdentityModel.Protocols": "2.0.0",
         "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0",

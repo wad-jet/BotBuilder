@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.BotCore.Connector;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.Bot.Connector
 {
@@ -18,9 +20,16 @@ namespace Microsoft.Bot.Connector
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public string MicrosoftAppId { get; set; }
-        public string MicrosoftAppIdSettingName { get; set; }
+        public string MicrosoftAppIdSettingName { get; set; } = Constants.MicrosoftAppIdSettingName;
         public bool DisableSelfIssuedTokens { get; set; }
         public virtual string OpenIdConfigurationUrl { get; set; } = JwtConfig.ToBotFromChannelOpenIdMetadataUrl;
+
+        public BotAuthentication()
+        {
+            // I was unable able to remove the default ctor 
+            // because of compilation error while using the 
+            // attribute in my controller
+        }
 
         public BotAuthentication(IConfigurationRoot configuration, IHttpContextAccessor httpContextAccessor)
         {
@@ -38,7 +47,7 @@ namespace Microsoft.Bot.Connector
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext actionContext, ActionExecutionDelegate next)
         {         
-            MicrosoftAppId = MicrosoftAppId ?? _configuration[$"{MicrosoftAppIdSettingName}:MicrosoftAppId"];
+            MicrosoftAppId = MicrosoftAppId ?? _configuration[MicrosoftAppIdSettingName];
 
             if (Debugger.IsAttached && String.IsNullOrEmpty(MicrosoftAppId))
                 // then auth is disabled
@@ -46,8 +55,15 @@ namespace Microsoft.Bot.Connector
 
             var tokenExtractor = new JwtTokenExtractor(JwtConfig.GetToBotFromChannelTokenValidationParameters(MicrosoftAppId), OpenIdConfigurationUrl);
 
+            var frameRequestHeaders = actionContext.HttpContext.Request.Headers as FrameRequestHeaders;
+            if (frameRequestHeaders == null)
+            {
+                //TODO: ...
+                throw new NotSupportedException("frameRequestHeaders is null");
+            }
+
             //TODO: Надо проверить!
-            var identity = await tokenExtractor.GetIdentityAsync(actionContext.HttpContext.Request.Headers["WWW-Authenticate"]);
+            var identity = await tokenExtractor.GetIdentityAsync(frameRequestHeaders.HeaderAuthorization.FirstOrDefault());
 
             // No identity? If we're allowed to, fall back to MSA
             // This code path is used by the emulator
@@ -56,7 +72,7 @@ namespace Microsoft.Bot.Connector
                 tokenExtractor = new JwtTokenExtractor(JwtConfig.ToBotFromMSATokenValidationParameters, JwtConfig.ToBotFromMSAOpenIdMetadataUrl);
 
                 //TODO: Надо проверить!
-                identity = await tokenExtractor.GetIdentityAsync(actionContext.HttpContext.Request.Headers["WWW-Authenticate"]);
+                identity = await tokenExtractor.GetIdentityAsync(frameRequestHeaders.HeaderAuthorization.FirstOrDefault());
 
                 // Check to make sure the app ID in the token is ours
                 if (identity != null)
@@ -108,7 +124,7 @@ namespace Microsoft.Bot.Connector
                 _httpContextAccessor.HttpContext.User = new ClaimsPrincipal(identity);
             }
 
-            base.OnActionExecuting(actionContext);
+            await base.OnActionExecutionAsync(actionContext, next);
         }
     }
 }
