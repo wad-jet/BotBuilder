@@ -55,10 +55,10 @@ namespace Microsoft.Bot.Builder.Dialogs
             : base(message, inner)
         {
         }
-        protected DialogStackException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+        //protected DialogStackException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
     }
 
     /// <summary>
@@ -75,10 +75,10 @@ namespace Microsoft.Bot.Builder.Dialogs
             : base("IDialog method execution finished with no resume handler specified through IDialogStack.", inner)
         {
         }
-        private NoResumeHandlerException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+        //private NoResumeHandlerException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
     }
 
     /// <summary>
@@ -95,10 +95,10 @@ namespace Microsoft.Bot.Builder.Dialogs
             : base("IDialog method execution finished with multiple resume handlers specified through IDialogStack.", inner)
         {
         }
-        private MultipleResumeHandlerException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+        //private MultipleResumeHandlerException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
     }
 
     /// <summary>
@@ -115,10 +115,10 @@ namespace Microsoft.Bot.Builder.Dialogs
             : base(message)
         {
         }
-        protected PromptException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+        //protected PromptException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
     }
 
     /// <summary>
@@ -135,9 +135,9 @@ namespace Microsoft.Bot.Builder.Dialogs
             : base(message)
         {
         }
-        private TooManyAttemptsException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+        //private TooManyAttemptsException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
     }
 }

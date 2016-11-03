@@ -21,8 +21,7 @@
         "Microsoft.Bot.Builder.Azure/Properties/AssemblyInfo.cs",
         "Microsoft.Bot.Builder.FormFlow.Json/**/*.cs",
         "Microsoft.Bot.Builder.Azure/**/*.cs",
-        "Microsoft.Bot.Builder.History/Properties/AssemblyInfo.cs",
-        "Dialogs/**/*.cs",
+        "Microsoft.Bot.Builder.History/Properties/AssemblyInfo.cs",        
         "FormFlow/**/*.cs",
         "Scorables/**/*.cs",
         "Luis/**/*.cs"

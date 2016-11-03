@@ -91,14 +91,9 @@ namespace Microsoft.Bot.Connector
 
         public void GenerateUnauthorizedResponse(ActionExecutingContext actionContext)
         {
-            //TODO: Возможны баги - проверь! ...
             string host = new Uri(actionContext.HttpContext.Request.Host.ToUriComponent()).DnsSafeHost;
             actionContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             actionContext.HttpContext.Response.Headers.Add("WWW-Authenticate", string.Format("Bearer realm=\"{0}\"", host));
-
-            //string host = actionContext.Request.RequestUri.DnsSafeHost;
-            //actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
-            //actionContext.Response.Headers.Add("WWW-Authenticate", string.Format("Bearer realm=\"{0}\"", host));
             return;
         }
 

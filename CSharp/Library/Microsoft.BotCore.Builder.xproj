@@ -16,7 +16,7 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <DnxInvisibleFolder Include="Dialogs\" />
+    <DnxInvisibleFolder Include="Fibers\" />
     <DnxInvisibleFolder Include="FormFlow\" />
     <DnxInvisibleFolder Include="Luis\" />
     <DnxInvisibleFolder Include="Microsoft.Bot.Builder.Azure\" />

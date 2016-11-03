@@ -45,8 +45,8 @@ namespace Microsoft.Bot.Connector
             _httpContextAccessor = httpContextAccessor;
             _memoryCache = memoryCache;
 
-            MicrosoftAppId = appId ?? _configuration[$"{MicrosoftAppIdSettingName}:MicrosoftAppId"];
-            MicrosoftAppPassword = password ?? _configuration[$"{MicrosoftAppIdSettingName}:MicrosoftAppPassword"];
+            MicrosoftAppId = appId ?? _configuration[MicrosoftAppIdSettingName];
+            MicrosoftAppPassword = password ?? _configuration[MicrosoftAppPasswordSettingName];
             TokenCacheKey = $"{MicrosoftAppId}-cache";
         }
 
